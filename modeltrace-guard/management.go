@@ -64,6 +64,9 @@ func handleManagement(request []byte) ([]byte, error) {
 }
 
 func dispatchManagement(req managementRequest) managementResponse {
+	// Lazily initialize the record rings so status/history/routing stay safe
+	// before any usage or probe record exists.
+	ensureRings()
 	path := normalizeManagementPath(req.Path)
 	method := strings.ToUpper(req.Method)
 	switch path {
@@ -99,6 +102,8 @@ func dispatchManagement(req managementRequest) managementResponse {
 func normalizeManagementPath(path string) string {
 	path = strings.TrimPrefix(path, "/")
 	path = strings.TrimPrefix(path, "v0/management/")
+	// Resource requests arrive under /v0/resource/plugins/<pluginID>/.
+	path = strings.TrimPrefix(path, "v0/resource/plugins/"+pluginID+"/")
 	path = strings.TrimPrefix(path, pluginID+"/")
 	return strings.Trim(path, "/")
 }

@@ -156,7 +156,11 @@ func requestManualProbe() {
 }
 
 func onConfigChanged() {
-	if activeConfig().IntervalMinutes > 0 {
+	ensureRings()
+	cfg := activeConfig()
+	probeHistory.resize(cfg.HistorySize)
+	routingHistory.resize(cfg.RoutingSize)
+	if cfg.IntervalMinutes > 0 {
 		ensureProber()
 		return
 	}
