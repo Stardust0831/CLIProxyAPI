@@ -15,8 +15,8 @@
             "goos": "linux",
             "goarch": "amd64",
             "url": "https://raw.githubusercontent.com/Stardust0831/CLIProxyAPI/plugin-store/modeltrace-guard-0.1.0-linux-amd64.zip",
-            "sha256": "15de064d4b9125d78973c643a72bead61f878ae2b87c449219903a45a593b793",
-            "size": 4290710
+            "sha256": "aaf168db5e01c08ce0709d9bb064e75aebe60f50164c064405951b3f98361fdc",
+            "size": 2129237
           }
         ]
       }
