@@ -89,6 +89,32 @@ curl -s -H "Authorization: Bearer <management-key>" http://127.0.0.1:8317/v0/man
 | `history_size` | `200` | In-memory probe record ring size. |
 | `routing_size` | `1000` | In-memory routing record ring size. |
 | `entry_protocol` / `exit_protocol` | `openai` | Protocol translation applied to probe requests. |
+| `rotation_enabled` | `false` | Time-window credential rotation. When true the plugin acts as the host scheduler and picks the credential for every request; when false the built-in scheduler (round-robin) runs. |
+| `rotation_window_minutes` | `4` | Minutes each credential stays active before rotating to the next. |
+| `rotation_providers` | *(all)* | Restrict rotation to these providers. Mixed-provider requests rotate only the listed providers' candidates. |
+
+### Time-window rotation
+
+With `rotation_enabled: true` the plugin registers as the host scheduler: the
+host offers every available candidate on each request and the plugin decides
+which credential serves it. Each provider (and the merged mixed-provider
+candidate list) sticks to one credential for `rotation_window_minutes`, then
+rotates to the next candidate in a stable ID order, wrapping around. Requests
+inside the window reuse the current credential; when the active credential
+disappears from the candidates (disabled, cooling down, removed) a fresh
+window starts on the first candidate.
+
+`GET /v0/management/modeltrace-guard/status` reports the active windows:
+
+```json
+"rotation": {
+  "enabled": true,
+  "window_minutes": 4,
+  "active_windows": {
+    "mixed": {"auth_id": "op***dc", "remaining_seconds": 239, "switches": 0, "window_started_at": "..."}
+  }
+}
+```
 
 Runtime updates are also possible via `PUT /v0/management/modeltrace-guard/config` with a JSON body of the same fields.
 

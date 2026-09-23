@@ -89,6 +89,25 @@ curl -s -H "Authorization: Bearer <management-key>" http://127.0.0.1:8317/v0/man
 | `history_size` | `200` | 内存中探针记录环形缓冲大小。 |
 | `routing_size` | `1000` | 内存中路由记录环形缓冲大小。 |
 | `entry_protocol` / `exit_protocol` | `openai` | 探针请求应用的协议翻译。 |
+| `rotation_enabled` | `false` | 时间窗凭证轮换。开启后插件作为宿主调度器为每个请求选凭证；关闭则走内建 round-robin。 |
+| `rotation_window_minutes` | `4` | 每个凭证保持活跃的分钟数，超时后轮换到下一个。 |
+| `rotation_providers` | *(全部)* | 限制轮换参与的 provider。mixed 请求只轮换列表内 provider 的候选。 |
+
+### 时间窗轮换
+
+`rotation_enabled: true` 时插件注册为宿主调度器：宿主在每个请求时把全部可用候选交给插件，由插件决定用哪个凭证。每个 provider（以及 mixed 路由的合并候选列表）粘住一个凭证 `rotation_window_minutes` 分钟，然后按稳定的 ID 顺序轮换到下一个，循环往复。窗口内的请求复用当前凭证；当前凭证从候选中消失（被禁用、冷却中、已移除）时，在第一个候选上开启新窗口。
+
+`GET /v0/management/modeltrace-guard/status` 会报告活跃窗口：
+
+```json
+"rotation": {
+  "enabled": true,
+  "window_minutes": 4,
+  "active_windows": {
+    "mixed": {"auth_id": "op***dc", "remaining_seconds": 239, "switches": 0, "window_started_at": "..."}
+  }
+}
+```
 
 运行时也可以通过 `PUT /v0/management/modeltrace-guard/config`（JSON body，字段同上）动态更新。
 
