@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "plugins": [
+    {
+      "id": "modeltrace-guard",
+      "name": "ModelTrace Guard",
+      "description": "4-minute per-account rotation scheduler with optional ModelTrace fingerprint detection.",
+      "author": "Stardust0831",
+      "version": "0.1.0",
+      "repository": "https://github.com/Stardust0831/CLIProxyAPI",
+      "install": {
+        "type": "direct",
+        "artifacts": [
+          {
+            "goos": "linux",
+            "goarch": "amd64",
+            "url": "https://raw.githubusercontent.com/Stardust0831/CLIProxyAPI/plugin-store/modeltrace-guard-0.1.0-linux-amd64.so",
+            "sha256": "fc01bc1afbc1ce137e5b7bbc395216d4e9e93aef4ce38f78708d27d4e1b0513d",
+            "size": 8152200
+          }
+        ]
+      }
+    }
+  ]
+}
