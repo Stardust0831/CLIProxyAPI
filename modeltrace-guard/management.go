@@ -181,6 +181,12 @@ func statusJSON() json.RawMessage {
 			"probe_records":   probeHistory.size(),
 			"routing_records": routingHistory.size(),
 		},
+		"rotation": map[string]any{
+			"enabled":        cfg.RotationEnabled,
+			"window_minutes": cfg.RotationWindowMinutes,
+			"providers":      cfg.RotationProviders,
+			"active_windows": rotationStatus(),
+		},
 	}
 	raw, errMarshal := json.Marshal(payload)
 	if errMarshal != nil {
@@ -210,18 +216,21 @@ func routingJSON(limit int) json.RawMessage {
 func configJSON() json.RawMessage {
 	cfg := activeConfig()
 	raw, errMarshal := json.Marshal(map[string]any{
-		"bank_path":        cfg.BankPath,
-		"interval_minutes": cfg.IntervalMinutes,
-		"probes_per_run":   cfg.ProbesPerRun,
-		"providers":        cfg.Providers,
-		"auth_ids":         cfg.AuthIDs,
-		"models":           cfg.Models,
-		"environments":     cfg.Environments,
-		"history_path":     cfg.HistoryPath,
-		"history_size":     cfg.HistorySize,
-		"routing_size":     cfg.RoutingSize,
-		"entry_protocol":   cfg.EntryProtocol,
-		"exit_protocol":    cfg.ExitProtocol,
+		"bank_path":               cfg.BankPath,
+		"interval_minutes":        cfg.IntervalMinutes,
+		"probes_per_run":          cfg.ProbesPerRun,
+		"providers":               cfg.Providers,
+		"auth_ids":                cfg.AuthIDs,
+		"models":                  cfg.Models,
+		"environments":            cfg.Environments,
+		"history_path":            cfg.HistoryPath,
+		"history_size":            cfg.HistorySize,
+		"routing_size":            cfg.RoutingSize,
+		"entry_protocol":          cfg.EntryProtocol,
+		"exit_protocol":           cfg.ExitProtocol,
+		"rotation_enabled":        cfg.RotationEnabled,
+		"rotation_window_minutes": cfg.RotationWindowMinutes,
+		"rotation_providers":      cfg.RotationProviders,
 	})
 	if errMarshal != nil {
 		return jsonRaw(`{"error":"config marshal failed"}`)

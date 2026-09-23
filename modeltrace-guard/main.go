@@ -99,6 +99,7 @@ type registration struct {
 type registrationCapabilities struct {
 	UsagePlugin   bool `json:"usage_plugin"`
 	ManagementAPI bool `json:"management_api"`
+	Scheduler     bool `json:"scheduler"`
 }
 
 func main() {}
@@ -170,6 +171,8 @@ func handleMethod(method string, request []byte) ([]byte, error) {
 		return okEnvelope(managementRegistration())
 	case pluginabi.MethodManagementHandle:
 		return handleManagement(request)
+	case pluginabi.MethodSchedulerPick:
+		return handleSchedulerPick(request)
 	default:
 		return errorEnvelope("unknown_method", "unknown method: "+method), nil
 	}
@@ -188,11 +191,15 @@ func pluginRegistration() registration {
 				{Name: "interval_minutes", Type: pluginapi.ConfigFieldTypeInteger, Description: "Minutes between automatic probe runs; 0 disables scheduled probing."},
 				{Name: "probes_per_run", Type: pluginapi.ConfigFieldTypeInteger, Description: "Number of long-integer challenge probes per run (1-3)."},
 				{Name: "providers", Type: pluginapi.ConfigFieldTypeString, Description: "Comma-separated provider filter, for example codex,claude. Empty keeps every credential."},
+				{Name: "rotation_enabled", Type: pluginapi.ConfigFieldTypeString, Description: "Enable time-window credential rotation (true/false); when false the built-in scheduler runs."},
+				{Name: "rotation_window_minutes", Type: pluginapi.ConfigFieldTypeInteger, Description: "Minutes each credential stays active before rotating to the next (default 4)."},
+				{Name: "rotation_providers", Type: pluginapi.ConfigFieldTypeString, Description: "Comma-separated providers the rotation applies to. Empty rotates every provider."},
 			},
 		},
 		Capabilities: registrationCapabilities{
 			UsagePlugin:   true,
 			ManagementAPI: true,
+			Scheduler:     true,
 		},
 	}
 }

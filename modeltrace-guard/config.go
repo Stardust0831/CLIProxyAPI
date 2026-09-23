@@ -36,18 +36,24 @@ type pluginConfig struct {
 	RoutingSize     int               `yaml:"routing_size"`
 	EntryProtocol   string            `yaml:"entry_protocol"`
 	ExitProtocol    string            `yaml:"exit_protocol"`
+
+	// Time-window credential rotation (host scheduler plugin).
+	RotationEnabled       bool     `yaml:"rotation_enabled"`
+	RotationWindowMinutes int      `yaml:"rotation_window_minutes"`
+	RotationProviders     []string `yaml:"rotation_providers"`
 }
 
 const (
-	defaultBankPath        = "data/unified_bank.json"
-	defaultIntervalMinutes = 60
-	defaultProbesPerRun    = 3
-	defaultHistorySize     = 200
-	defaultRoutingSize     = 1000
-	defaultProbeEntryProto = "openai"
-	defaultProbeExitProto  = "openai"
-	minimumIntervalMinutes = 15
-	maximumProbesPerRun    = 3
+	defaultBankPath          = "data/unified_bank.json"
+	defaultIntervalMinutes   = 60
+	defaultProbesPerRun      = 3
+	defaultHistorySize       = 200
+	defaultRoutingSize       = 1000
+	defaultProbeEntryProto   = "openai"
+	defaultProbeExitProto    = "openai"
+	minimumIntervalMinutes   = 15
+	maximumProbesPerRun      = 3
+	defaultRotationWindowMin = 4
 )
 
 func normalizePluginConfig(cfg pluginConfig) pluginConfig {
@@ -92,6 +98,10 @@ func normalizePluginConfig(cfg pluginConfig) pluginConfig {
 	if strings.TrimSpace(cfg.ExitProtocol) == "" {
 		cfg.ExitProtocol = defaultProbeExitProto
 	}
+	if cfg.RotationWindowMinutes <= 0 {
+		cfg.RotationWindowMinutes = defaultRotationWindowMin
+	}
+	cfg.RotationProviders = trimList(cfg.RotationProviders)
 	return cfg
 }
 
@@ -238,6 +248,21 @@ func applyConfigValues(values map[string]any) {
 	}
 	if v, ok := values["exit_protocol"].(string); ok {
 		updated.ExitProtocol = v
+	}
+	if v, ok := values["rotation_enabled"]; ok {
+		if b, okBool := v.(bool); okBool {
+			updated.RotationEnabled = b
+		} else if s, okString := v.(string); okString {
+			updated.RotationEnabled = s == "true" || s == "1" || s == "yes"
+		}
+	}
+	if v, ok := values["rotation_window_minutes"]; ok {
+		if n, errConvert := numberToInt(v); errConvert == nil {
+			updated.RotationWindowMinutes = n
+		}
+	}
+	if v, ok := values["rotation_providers"]; ok {
+		updated.RotationProviders = toList(v)
 	}
 	updated = normalizePluginConfig(updated)
 	config.Store(&configStore{curr: updated})
